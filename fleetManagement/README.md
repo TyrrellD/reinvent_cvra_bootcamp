@@ -171,7 +171,7 @@ In this section we will use the Cognito setup deployed within the CVRA and exten
 
 1. Deploy the following CloudFormation template to add a fleet-admin group and to create a user [Cognito CloudFormation Template](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https://s3.amazonaws.com/cvra-deepdrive-us-east-1-683617902415/cognito.yaml&stackName=fleetAdminCognito)
 
-When deploying the stack you will need to enter your Email Address to ensure you get the password for the fleet.admin user and you will need to enter you Cognito Pool ID. Your Cognito Pool ID can be found in the output of the cvra CloudFormation template called CognitoUserPoolId.
+When deploying the stack you will need to enter your Email Address to ensure you get the password for the fleet.admin user and you will need to enter your Cognito Pool ID. Your Cognito Pool ID can be found in the output of the cvra CloudFormation template called CognitoUserPoolId.
 
 3. From the AWS Console, select the Cognito Service and then click on the **connected-vehicle-user-pool** user pool.
 
@@ -180,18 +180,18 @@ When deploying the stack you will need to enter your Email Address to ensure you
 5. Select **Domain Name** under App integration and create a new custom domain (I used my AWS_ACCOUNT_ID), check its availability and save the changes.
 
 6. Go to the CloudFront Service in the console and create a new Web distribution.
- - The **Origin Domain Name** should be the S3 bucket that was created above.
- - The **Default Root Object** should be index.html.
+ - The **Origin Domain Name** should be the S3 bucket that was created above.Your S3 bucket name can be found in the output of the  tripfunction CloudFormation template. 
  - The **Origin ID** can be fleetmgtui
  - **Viewer Protocol Policy** should be Redirect HTTP to HTTPS
- - **Query String Forwarding and Caching** should be Forward all, cache based on all
  - **Object Caching** should be set to Customized with a **Default TTL** of 5
+ - **Query String Forwarding and Caching** should be Forward all, cache based on all
+ - **Default Root Object** should be index.html.
  
-It will take a while for the CloudFront distribution to deploy, while this is happening we can build the web site. Before you move to the next step take a note of the CloudFront domain name.
+It will take a while for the CloudFront distribution to deploy, while this is happening we can build the web site. Before you move to the next step take a note of the CloudFront domain name ***********.cloudfront.net.
 
 7. Back in Cognito, select **App client settings** under the connected-vehicle-user-pool.
  - Ensure Select all and Cognito User Pool is ticked.
- - Put the CloudFront domain name in the **Callback URL(s)** and **Sign out URL(s)** dialog box, make sure you add **https://** in front of the URL within the dialog box.
+ - Put the CloudFront domain name ***********.cloudfront.net in the **Callback URL(s)** and **Sign out URL(s)** dialog box, make sure you add **https://** in front of the URL within the dialog box.
  - Tick Implicit grant, openid, profile and aws.cognito.signin.user.admin
 
 ## Building the Web UI
@@ -207,6 +207,10 @@ You will also need the awscli setup to access your account.
 `$ cd web-ui`
 
 3. Create a file called ***config.json*** in the ***src/assets*** directory and populate it with the below JSON and ensure you enter your specifics as the values.
+
+- USER_POOL_ID can be found in Cognito, select Manage User Pools select Connected-vehcile-user-pool in General Settings
+- User_POOL_ClIENT_ID can be found in Cognito, select Manage User Pools select Connected-vehcile-user-pool in App clients
+- IOT_ENDPOInt can be found in Iot Core, Settings 
 
 ```json
 {
@@ -239,7 +243,7 @@ An example of what the file should look like is below:
 
 5. Next we will build the API sdk, run the below commands via your terminal / command line.
 
-> Note. make sure you default region is set to US-EAST-1 (aws configure set region us-east-1)
+> Note. make sure your default region is set to US-EAST-1 (aws configure set region us-east-1)
 
 ```bash
 all_apis=$(aws apigateway get-rest-apis)
@@ -267,7 +271,7 @@ aws s3 cp --acl public-read --recursive output/static s3://${WEBSITE_BUCKET}/sta
 
 Before re:Invent this step will be automated.
 
-1. Create a new DynamoDB table called vehilceTable with a primary key called vin.
+1. Create a new DynamoDB table called vehicleTable with a primary key called vin.
 2. Via the IoT Simulator Automotive page make a note of the Vehicle VIN numbers.
 3. For each VIN within the IoT Simulator you will need to make a new entry into the vehicleTable with the following String Items.
  - modelName
